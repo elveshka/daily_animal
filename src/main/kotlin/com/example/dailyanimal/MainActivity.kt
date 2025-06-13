@@ -16,10 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
-import retrofit2.http.Query
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,6 +32,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.times
 import androidx.compose.foundation.layout.width
+import com.example.dailyanimal.api.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,6 +47,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun CustomTooltip() {
+    val backgroundColor = MaterialTheme.colorScheme.primaryContainer
+    val textColor = MaterialTheme.colorScheme.onPrimaryContainer
+    
     Box(
         modifier = Modifier
             .width(300.dp)
@@ -58,14 +58,11 @@ fun CustomTooltip() {
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val path = Path().apply {
-                // Draw the main rectangle
                 moveTo(0f, 20f)
                 lineTo(size.width - 20f, 20f)
-                // Draw the arrow
                 lineTo(size.width - 20f, 0f)
                 lineTo(size.width, 20f)
                 lineTo(size.width - 20f, 40f)
-                // Complete the rectangle
                 lineTo(size.width - 20f, size.height)
                 lineTo(0f, size.height)
                 close()
@@ -73,15 +70,14 @@ fun CustomTooltip() {
 
             drawPath(
                 path = path,
-                color = MaterialTheme.colorScheme.primaryContainer,
+                color = backgroundColor,
                 style = Fill
             )
         }
 
-        // Text content
         Text(
             text = "Смени собаку на кота",
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            color = textColor,
             fontSize = 28.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier
@@ -162,7 +158,6 @@ fun DailyAnimalApp() {
                 }
             }
 
-            // Image and Quote Section
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -170,7 +165,6 @@ fun DailyAnimalApp() {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Image Box
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -197,8 +191,8 @@ fun DailyAnimalApp() {
                                     scope.launch {
                                         try {
                                             val quoteResponse = QuoteApiClient.service.getQuote()
-                                            quote = quoteResponse.quoteText
-                                            quoteAuthor = "Elvek Goriaev"
+                                            quote = quoteResponse.content
+                                            quoteAuthor = quoteResponse.author
                                             
                                             if (!hasShownFirstTooltip) {
                                                 hasShownFirstTooltip = true
@@ -222,7 +216,6 @@ fun DailyAnimalApp() {
                     }
                 }
 
-                // Quote Card - only show if we have both image and quote
                 if (imageUrl != null && quote != null) {
                     Card(
                         modifier = Modifier
@@ -240,7 +233,7 @@ fun DailyAnimalApp() {
                                 text = "\"$quote\"",
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                textAlign = TextAlign.Center
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
@@ -253,7 +246,6 @@ fun DailyAnimalApp() {
                 }
             }
 
-            // Button
             Button(
                 onClick = {
                     scope.launch {
@@ -306,72 +298,4 @@ fun DailyAnimalApp() {
             }
         }
     }
-}
-
-interface DogApiService {
-    @GET("api/breeds/image/random")
-    suspend fun getRandomDog(): DogResponse
-}
-
-object DogApiClient {
-    private const val BASE_URL = "https://dog.ceo/"
-
-    private val retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    val service: DogApiService = retrofit.create(DogApiService::class.java)
-}
-
-// Cat API Models and Client
-data class CatResponse(
-    val id: String,
-    val url: String,
-    val width: Int,
-    val height: Int
-)
-
-interface CatApiService {
-    @GET("v1/images/search")
-    suspend fun getRandomCat(): List<CatResponse>
-}
-
-object CatApiClient {
-    private const val BASE_URL = "https://api.thecatapi.com/"
-
-    private val retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    val service: CatApiService = retrofit.create(CatApiService::class.java)
-}
-
-// Add new data class for quotes
-data class QuoteResponse(
-    val quoteText: String,
-    val quoteAuthor: String
-)
-
-// Add quote service interface
-interface QuoteApiService {
-    @GET("api/1.0/")
-    suspend fun getQuote(
-        @Query("method") method: String = "getQuote",
-        @Query("format") format: String = "json",
-        @Query("lang") lang: String = "ru"
-    ): QuoteResponse
-}
-
-// Add quote client
-object QuoteApiClient {
-    private const val BASE_URL = "https://api.forismatic.com/"
-
-    private val retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    val service: QuoteApiService = retrofit.create(QuoteApiService::class.java)
 }
