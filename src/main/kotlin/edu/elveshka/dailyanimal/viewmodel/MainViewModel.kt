@@ -24,13 +24,17 @@ data class MainUiState(
     val hasShownFirstTooltip: Boolean = false
 )
 
-class MainViewModel : ViewModel() {
+class MainViewModel(
+    private val dogApiClient: DogApiClient,
+    private val catApiClient: CatApiClient,
+    private val quoteApiClient: QuoteApiClient
+) : ViewModel() {
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
-    private val dogRepository = DogRepository(DogApiClient())
-    private val catRepository = CatRepository(CatApiClient())
-    private val quoteRepository = QuoteRepository(QuoteApiClient())
+    private val dogRepository = DogRepository(dogApiClient)
+    private val catRepository = CatRepository(catApiClient)
+    private val quoteRepository = QuoteRepository(quoteApiClient)
 
     fun toggleApi() {
         _uiState.value = _uiState.value.copy(
