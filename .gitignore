@@ -1,10 +1,33 @@
+# Gradle
+.gradle/
+build/
+**/build/
+
+# Local configuration
+local.properties
+
+# IDE files
+.idea/
 *.iml
-.gradle
-/local.properties
-/.idea
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties 
+
+# Android Studio
+captures/
+.externalNativeBuild/
+.cxx/
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Log files
+*.log
+
+# Keystore files (никогда не коммитьте свои ключи!)
+*.jks
+*.keystore
+
+# Misc
+*.apk
+*.ap_ 
