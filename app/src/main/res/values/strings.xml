@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Daily Animal</string>
+    <string name="switch_to_cats">Переключиться на кошек</string>
+    <string name="switch_to_dogs">Переключиться на собак</string>
+    <string name="error_loading">Ошибка загрузки</string>
+    <string name="new_dog">Get your DOOOOOOG!</string>
+    <string name="new_cat">Get your CAAAAAT!</string>
+    <string name="loading_dog">Woof woof...</string>
+    <string name="loading_cat">Meow meow...</string>
+    <string name="tooltip_switch">Смени кота на собаку</string>
+    <string name="unknown_author">Эльвешка</string>
+    <string name="take_screenshot">Сохранить скриншот</string>
+</resources> 
