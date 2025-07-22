@@ -3,7 +3,6 @@ package edu.elveshka.dailyanimal.presentation.ui
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.compose.animation.core.animateFloatAsState
@@ -31,13 +30,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import edu.elveshka.dailyanimal.R
-import edu.elveshka.dailyanimal.domain.model.ContentType
+import edu.elveshka.dailyanimal.domain.enums.AnimalType
 import edu.elveshka.dailyanimal.domain.model.DailyContent
 import edu.elveshka.dailyanimal.presentation.viewmodel.DailyContentViewModel
 import kotlinx.coroutines.delay
-import java.io.File
-import java.io.FileOutputStream
-import java.io.OutputStream
 
 @Composable
 private fun QuoteCard(content: DailyContent) {
@@ -97,13 +93,14 @@ fun DailyContentScreen(viewModel: DailyContentViewModel) {
                 uiState.isLoading -> {
                     CircularProgressIndicator()
                     Text(
-                        text = if (uiState.contentType == ContentType.DOG) {
+                        text = if (uiState.contentType == AnimalType.DOG) {
                             stringResource(R.string.loading_dog)
                         } else {
                             stringResource(R.string.loading_cat)
                         }
                     )
                 }
+
                 uiState.error != null -> {
                     Text(
                         text = stringResource(R.string.error_loading),
@@ -114,7 +111,7 @@ fun DailyContentScreen(viewModel: DailyContentViewModel) {
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
                         Text(
-                            text = if (uiState.contentType == ContentType.DOG) {
+                            text = if (uiState.contentType == AnimalType.DOG) {
                                 stringResource(R.string.new_dog)
                             } else {
                                 stringResource(R.string.new_cat)
@@ -122,6 +119,7 @@ fun DailyContentScreen(viewModel: DailyContentViewModel) {
                         )
                     }
                 }
+
                 uiState.content != null -> {
                     AsyncImage(
                         model = uiState.content?.imageUrl,
@@ -139,7 +137,11 @@ fun DailyContentScreen(viewModel: DailyContentViewModel) {
                     )
 
                     Text(
-                        text = "— ${uiState.content?.quote?.quoteAuthor?.ifEmpty { stringResource(R.string.unknown_author) } ?: stringResource(R.string.unknown_author)}",
+                        text = "— ${
+                            uiState.content?.quote?.quoteAuthor?.ifEmpty { stringResource(R.string.unknown_author) } ?: stringResource(
+                                R.string.unknown_author
+                            )
+                        }",
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(top = 8.dp)
                     )
@@ -151,7 +153,7 @@ fun DailyContentScreen(viewModel: DailyContentViewModel) {
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = if (uiState.contentType == ContentType.DOG) {
+                            text = if (uiState.contentType == AnimalType.DOG) {
                                 stringResource(R.string.new_dog)
                             } else {
                                 stringResource(R.string.new_cat)
@@ -206,7 +208,7 @@ fun DailyContentScreen(viewModel: DailyContentViewModel) {
             ) {
                 Icon(
                     imageVector = Icons.Filled.Pets,
-                    contentDescription = if (uiState.contentType == ContentType.DOG) {
+                    contentDescription = if (uiState.contentType == AnimalType.DOG) {
                         stringResource(R.string.switch_to_cats)
                     } else {
                         stringResource(R.string.switch_to_dogs)
@@ -233,7 +235,10 @@ private fun takeScreenshot(context: Context) {
                 put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
             }
 
-            val uri = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+            val uri = context.contentResolver.insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                contentValues
+            )
             uri?.let { imageUri ->
                 context.contentResolver.openOutputStream(imageUri)?.use { stream ->
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)

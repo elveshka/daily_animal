@@ -8,7 +8,7 @@ import edu.elveshka.dailyanimal.data.api.CatResponse
 import edu.elveshka.dailyanimal.data.api.DogResponse
 import edu.elveshka.dailyanimal.data.api.QuoteApi
 import edu.elveshka.dailyanimal.data.repository.DailyContentRepositoryImpl
-import edu.elveshka.dailyanimal.domain.model.ContentType
+import edu.elveshka.dailyanimal.domain.enums.AnimalType
 import edu.elveshka.dailyanimal.domain.repository.DailyContentRepository
 import edu.elveshka.dailyanimal.domain.usecase.GetRandomContentUseCase
 import edu.elveshka.dailyanimal.presentation.state.DailyContentUiState
@@ -24,10 +24,12 @@ class DailyContentViewModel : ViewModel() {
     private var isFirstLoad = true
     private var hasShownTooltip = false
 
-    private val _uiState = MutableStateFlow(DailyContentUiState(
-        showTooltip = false,
-        contentType = ContentType.CAT
-    ))
+    private val _uiState = MutableStateFlow(
+        DailyContentUiState(
+            showTooltip = false,
+            contentType = AnimalType.CAT
+        )
+    )
     val uiState: StateFlow<DailyContentUiState> = _uiState.asStateFlow()
 
     private val dogRetrofit = Retrofit.Builder()
@@ -67,7 +69,7 @@ class DailyContentViewModel : ViewModel() {
         hasShownTooltip = true
         _uiState.update { currentState ->
             currentState.copy(
-                contentType = if (currentState.contentType == ContentType.DOG) ContentType.CAT else ContentType.DOG,
+                contentType = if (currentState.contentType == AnimalType.DOG) AnimalType.CAT else AnimalType.DOG,
                 showTooltip = false,
                 content = null
             )
