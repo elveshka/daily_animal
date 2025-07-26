@@ -1,10 +1,5 @@
 package edu.elveshka.dailyanimal.presentation.ui
 
-import android.content.ContentValues
-import android.content.Context
-import android.graphics.Bitmap
-import android.os.Environment
-import android.provider.MediaStore
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
@@ -18,14 +13,25 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Pets
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -37,6 +43,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 private fun QuoteCard(content: DailyContent) {
+    val author = content.quote.quoteAuthor!!.ifEmpty { stringResource(R.string.unknown_author) }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -52,7 +59,7 @@ private fun QuoteCard(content: DailyContent) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "— ${content.quote.quoteAuthor}",
+                text = "— $author",
                 style = MaterialTheme.typography.bodyMedium
             )
         }
@@ -68,7 +75,6 @@ fun DailyContentScreen(viewModel: DailyContentViewModel) {
         animationSpec = tween(durationMillis = 500),
         label = "tooltip_alpha"
     )
-    val context = LocalContext.current
 
     LaunchedEffect(uiState.showTooltip) {
         if (uiState.showTooltip) {
@@ -131,20 +137,7 @@ fun DailyContentScreen(viewModel: DailyContentViewModel) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text(
-                        text = "\"${uiState.content?.quote?.quoteText ?: ""}\"",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-
-                    Text(
-                        text = "— ${
-                            uiState.content?.quote?.quoteAuthor?.ifEmpty { stringResource(R.string.unknown_author) } ?: stringResource(
-                                R.string.unknown_author
-                            )
-                        }",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
+                    QuoteCard(content = uiState.content!!)
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -162,17 +155,6 @@ fun DailyContentScreen(viewModel: DailyContentViewModel) {
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
-
-                    IconButton(
-                        onClick = { takeScreenshot(context) },
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Camera,
-                            contentDescription = stringResource(R.string.take_screenshot),
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
                 }
             }
         }
@@ -219,33 +201,3 @@ fun DailyContentScreen(viewModel: DailyContentViewModel) {
         }
     }
 }
-
-private fun takeScreenshot(context: Context) {
-    try {
-        val view = (context as? android.app.Activity)?.window?.decorView?.rootView
-        view?.let {
-            it.isDrawingCacheEnabled = true
-            val bitmap = Bitmap.createBitmap(it.drawingCache)
-            it.isDrawingCacheEnabled = false
-
-            val filename = "DailyAnimal_${System.currentTimeMillis()}.jpg"
-            val contentValues = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
-                put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
-            }
-
-            val uri = context.contentResolver.insert(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                contentValues
-            )
-            uri?.let { imageUri ->
-                context.contentResolver.openOutputStream(imageUri)?.use { stream ->
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-                }
-            }
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-} 
